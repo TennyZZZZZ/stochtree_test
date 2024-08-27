@@ -1,0 +1,46 @@
+---
+title: "test"
+output: pdf_document
+date: "2024-08-27"
+---
+
+```{r setup, include=FALSE}
+library(stochtree)
+library(caret)
+```
+
+
+
+```{r}
+df <- read.csv("data.csv")
+```
+
+```{r}
+df$f5 <- df$f3
+```
+
+
+```{r}
+X <- df[, !(names(df) %in% c("target"))]
+y <- df$target
+```
+
+```{r}
+set.seed(0)
+trainIndex <- createDataPartition(y, p = 0.8, list = FALSE)
+X_train <- X[trainIndex,]
+X_test <- X[-trainIndex,]
+y_train <- y[trainIndex]
+y_test <- y[-trainIndex]
+```
+
+```{r}
+bart_model <- stochtree::bart(X_train = X,
+                              y_train = y,
+                              X_test = X_test
+)
+y_pred <- rowMeans(bart_model$y_hat_test)
+
+rmse <- sqrt(mean((y_test - y_pred)^2))
+print(paste("BART RMSE:", rmse))
+```
